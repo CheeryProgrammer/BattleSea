@@ -17,10 +17,10 @@ namespace GameLogic
 			get { return _player; }
 		}
 
-		public Game()
+		public Game(int fieldSize)
 		{
-			_player = new Player();
-			_rival = new Player();
+			_player = new Player(fieldSize);
+			_rival = new Player(fieldSize);
 		}
 
 		public void StartGame()

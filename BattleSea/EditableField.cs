@@ -5,11 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using GameLogic;
 
 namespace BattleSea
 {
 	class EditableField
 	{
+		private Dictionary<DataGridViewCell, object> _cellToValue = new Dictionary<DataGridViewCell, object>();
 		private DataGridView _grid;
 		private bool _isManualMode;
 		private bool _isVertical = false;
@@ -19,6 +21,10 @@ namespace BattleSea
 		public bool IsVertical
 		{
 			get { return _isVertical; }
+		}
+
+		public bool Enabled {
+			get { return _isManualMode; }
 		}
 
 		private int _shipIndex;
@@ -33,12 +39,13 @@ namespace BattleSea
 		{
 			_isManualMode = true;
 			_ships = ships;
+			_shipIndex = 0;
 		}
 
 		internal void DrawFake(int col, int row)
 		{
 			if (!_isManualMode) return;
-			ClearFake();
+			RestoreCells();
 			if (PossibleToPlace(col, row))
 			{
 				if (IsVertical)
@@ -48,8 +55,8 @@ namespace BattleSea
 				}
 				else
 				{
-					if (col > 11 - CurrentShip)
-						col = 11 - CurrentShip;
+					if (col > 10 - CurrentShip)
+						col = 10 - CurrentShip;
 				}
 				DrawFakeShip(col, row);
 			}
@@ -57,35 +64,53 @@ namespace BattleSea
 
 		private bool PossibleToPlace(int columnIndex, int rowIndex)
 		{
-			if (rowIndex < 0 || columnIndex <= 0)
+			if (rowIndex < 0 || columnIndex < 0)
 				return false;
 			if (IsVertical)
-				return rowIndex < 11;
-			return columnIndex <= 11;
+				return rowIndex < 10;
+			return columnIndex < 10;
 		}
 
 		private void DrawFakeShip(int columnIndex, int rowIndex)
 		{
+			var p = Common.DeNormalizeCoordinates(columnIndex, rowIndex);
+			columnIndex = p.X;
+			rowIndex = p.Y;
 			for (int i = 0; i < CurrentShip; i++)
 			{
 				var cell = _grid.Rows[rowIndex].Cells[columnIndex];
-				_fakeCells.Enqueue(cell);
+				_cellToValue.Add(cell, cell.Value);
 				cell.Value = Resources.ShipSegment;
 				if (IsVertical) rowIndex++;
 				else columnIndex++;
 			}
 		}
 
-		private void ClearFake()
+		private void RestoreCells()
 		{
-			while (_fakeCells.Count > 0)
-				_fakeCells.Dequeue().Value = Resources.EmptyCell;
+			var keys = _cellToValue.Keys.ToList();
+			foreach (var cell in keys)
+			{
+				object value;
+				if (_cellToValue.TryGetValue(cell, out value))
+				{
+					cell.Value = value;
+					_cellToValue.Remove(cell);
+				}
+			}
 		}
 
 		internal void SwitchDirection()
 		{
 			if (!_isManualMode) return;
 			_isVertical = !IsVertical;
+		}
+
+		public void MoveNext()
+		{
+			_shipIndex++;
+			if (!(_shipIndex < _ships.Length))
+				_isManualMode = false;
 		}
 	}
 }

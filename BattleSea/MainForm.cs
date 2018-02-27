@@ -18,7 +18,7 @@ namespace BattleSea
 		private void MainForm_Load(object sender, EventArgs e)
 		{
 			InitFields();
-			_game = new Game();
+			_game = new Game(Common.FieldSize);
 			_editableField = new EditableField(dgvMy);
 		}
 
@@ -26,7 +26,10 @@ namespace BattleSea
 		{
 			if(_game.Segments != null)
 				foreach (var point in _game.Segments)
-					dgvMy.Rows[point.Y].Cells[point.X + 1].Value = Resources.Irina;
+				{
+					var p = Common.DeNormalizeCoordinates(point);
+					dgvMy.Rows[p.Y].Cells[p.X].Value = Resources.Irina;
+				}
 		}
 
 		private void InitFields()
@@ -79,28 +82,37 @@ namespace BattleSea
 		private void btnSetManual_Click(object sender, EventArgs e)
 		{
 			ClearField(dgvMy);
+			_game.Player.ClearField();
 			_editableField.BeginEdit(Game.AvailableShips);
 		}
 
 		private void dgvMy_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
 		{
-			tbMessages.AppendText($"X: {e.ColumnIndex}, Y: {e.RowIndex}\n");
-			_editableField.DrawFake(e.ColumnIndex, e.RowIndex);
+			var p = Common.NormalizeCoordinates(e.ColumnIndex, e.RowIndex);
+			tbMessages.AppendText($"X: {e.ColumnIndex}, Y: {e.RowIndex} => Xn: {p.X}, Yn: {p.Y}\n");
+			_editableField.DrawFake(p.X, p.Y);
 			RenderMyField();
 		}
 
 		private void dgvMy_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
 		{
+			if (!_editableField.Enabled) return;
+			var p = Common.NormalizeCoordinates(e.ColumnIndex, e.RowIndex);
 			if (e.Button == MouseButtons.Right)
 			{
 				_editableField.SwitchDirection();
-				_editableField.DrawFake(e.ColumnIndex, e.RowIndex);
+				_editableField.DrawFake(p.X, p.Y);
 			}
 			if (e.Button == MouseButtons.Left)
 			{
-				if (_game.Player.TryPutOnField(_editableField.CurrentShip, new Point(e.ColumnIndex, e.RowIndex),
-					_editableField.IsVertical))
-					;
+				var limit = Common.FieldSize - _editableField.CurrentShip;
+				var x = !_editableField.IsVertical && p.X >= limit ? limit : p.X;
+				var y = _editableField.IsVertical && p.Y >= limit ? limit : p.Y;
+				if (_game.Player.TryPutOnField(_editableField.CurrentShip, new Point(x,y), _editableField.IsVertical))
+				{
+					RenderMyField();
+					_editableField.MoveNext();
+				}
 			}
 		}
 	}
