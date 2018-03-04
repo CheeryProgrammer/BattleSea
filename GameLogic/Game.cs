@@ -1,26 +1,31 @@
-﻿using System;
+﻿using GameLogic.Player;
+using GameLogic.ShipStuff;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GameLogic
 {
 	public class Game
 	{
-		private Player _player;
-		private Player _rival;
+		public FieldSetGenerator FieldGenerator { get; private set; }
+		private IPlayer _player;
+		private IPlayer _rival;
 
 		public static readonly int[] AvailableShips = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
 
-		public IReadOnlyCollection<Point> Segments { get => Player.Segments; }
+		public IReadOnlyCollection<Segment> Segments { get => Player.Ships.SelectMany(s => s.Segments).ToList(); }
 
-		public Player Player
+		public IPlayer Player
 		{
 			get { return _player; }
 		}
 
 		public Game(int fieldSize)
 		{
-			_player = new Player(fieldSize);
-			_rival = new Player(fieldSize);
+			_player = new LocalPlayer(fieldSize);
+			_rival = new LocalPlayer(fieldSize);
+			FieldGenerator = new FieldSetGenerator(AvailableShips, fieldSize);
 		}
 
 		public void StartGame()
@@ -34,12 +39,18 @@ namespace GameLogic
 
 		public void RandomizePlayerField()
 		{
-			Player.GenerateField();
+			var ships = FieldGenerator.GenerateField();
+			Player.Initialize(ships);
 		}
 
 		public bool ReadyToPlay()
 		{
-			return Player.IsReady() && _rival.IsReady();
+			return Player.Ready && _rival.Ready;
+		}
+
+		public void PrepareLocalPlayer()
+		{
+			Player.Initialize(FieldGenerator.Ships.ToList());
 		}
 	}
 

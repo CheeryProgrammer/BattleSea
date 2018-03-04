@@ -1,6 +1,8 @@
 ﻿using BattleSea.Properties;
 using GameLogic;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace BattleSea
@@ -24,12 +26,19 @@ namespace BattleSea
 
 		private void RenderMyField()
 		{
-			if(_game.Segments != null)
-				foreach (var point in _game.Segments)
-				{
-					var p = Common.DeNormalizeCoordinates(point);
-					dgvMy.Rows[p.Y].Cells[p.X].Value = Resources.Irina;
-				}
+			IEnumerable<Point> points = null;
+			if (_editableField.Enabled)
+				points = _game.FieldGenerator.Ships
+					.SelectMany(s=>s.Segments)
+					.Select(seg=>seg.Position);
+			else
+				points = _game.Segments?.Select(seg => seg.Position);
+
+			foreach (var point in points)
+			{
+				var p = Common.DeNormalizeCoordinates(point);
+				dgvMy.Rows[p.Y].Cells[p.X].Value = Resources.ShipSegment;
+			}
 		}
 
 		private void InitFields()
@@ -51,7 +60,7 @@ namespace BattleSea
 			}
 		}
 
-		private void dgvMy_CellClick(object sender, DataGridViewCellEventArgs e)
+		private void DgvMy_CellClick(object sender, DataGridViewCellEventArgs e)
 		{
 			OnMyFieldClick(e.ColumnIndex, e.RowIndex);
 		}
@@ -72,29 +81,30 @@ namespace BattleSea
 				_game.StartGame();
 		}
 
-		private void btnRandomize_Click(object sender, EventArgs e)
+		private void BtnRandomize_Click(object sender, EventArgs e)
 		{
 			ClearField(dgvMy);
 			_game.RandomizePlayerField();
 			RenderMyField();
 		}
 
-		private void btnSetManual_Click(object sender, EventArgs e)
+		private void BtnSetManual_Click(object sender, EventArgs e)
 		{
 			ClearField(dgvMy);
-			_game.Player.ClearField();
+			_game.FieldGenerator.ClearField();
+			_game.Player.Initialize();
 			_editableField.BeginEdit(Game.AvailableShips);
 		}
 
-		private void dgvMy_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+		private void DgvMy_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
 		{
 			var p = Common.NormalizeCoordinates(e.ColumnIndex, e.RowIndex);
 			tbMessages.AppendText($"X: {e.ColumnIndex}, Y: {e.RowIndex} => Xn: {p.X}, Yn: {p.Y}\n");
 			_editableField.DrawFake(p.X, p.Y);
-			RenderMyField();
+				RenderMyField();
 		}
 
-		private void dgvMy_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+		private void DgvMy_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
 		{
 			if (!_editableField.Enabled) return;
 			var p = Common.NormalizeCoordinates(e.ColumnIndex, e.RowIndex);
@@ -108,10 +118,11 @@ namespace BattleSea
 				var limit = Common.FieldSize - _editableField.CurrentShip;
 				var x = !_editableField.IsVertical && p.X >= limit ? limit : p.X;
 				var y = _editableField.IsVertical && p.Y >= limit ? limit : p.Y;
-				if (_game.Player.TryPutOnField(_editableField.CurrentShip, new Point(x,y), _editableField.IsVertical))
+				if (_game.FieldGenerator.TryPutOnField(_editableField.CurrentShip, new Point(x,y), _editableField.IsVertical))
 				{
 					RenderMyField();
-					_editableField.MoveNext();
+					if (!_editableField.MoveNext())
+						_game.PrepareLocalPlayer();
 				}
 			}
 		}

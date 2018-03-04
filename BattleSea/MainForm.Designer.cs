@@ -140,9 +140,9 @@
 			this.dgvMy.ShowRowErrors = false;
 			this.dgvMy.Size = new System.Drawing.Size(266, 266);
 			this.dgvMy.TabIndex = 0;
-			this.dgvMy.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvMy_CellClick);
-			this.dgvMy.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dgvMy_CellMouseClick);
-			this.dgvMy.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvMy_CellMouseEnter);
+			this.dgvMy.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DgvMy_CellClick);
+			this.dgvMy.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.DgvMy_CellMouseClick);
+			this.dgvMy.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.DgvMy_CellMouseEnter);
 			// 
 			// colRows
 			// 
@@ -459,7 +459,7 @@
 			this.btnManual.TabIndex = 1;
 			this.btnManual.Text = "Set manual";
 			this.btnManual.UseVisualStyleBackColor = true;
-			this.btnManual.Click += new System.EventHandler(this.btnSetManual_Click);
+			this.btnManual.Click += new System.EventHandler(this.BtnSetManual_Click);
 			// 
 			// btnRandomize
 			// 
@@ -469,7 +469,7 @@
 			this.btnRandomize.TabIndex = 1;
 			this.btnRandomize.Text = "Randomize";
 			this.btnRandomize.UseVisualStyleBackColor = true;
-			this.btnRandomize.Click += new System.EventHandler(this.btnRandomize_Click);
+			this.btnRandomize.Click += new System.EventHandler(this.BtnRandomize_Click);
 			// 
 			// btnPCStart
 			// 

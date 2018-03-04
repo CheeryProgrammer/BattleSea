@@ -40,9 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FieldSetGenerator.cs" />
     <Compile Include="Game.cs" />
-    <Compile Include="Player\Player.cs" />
-    <Compile Include="Ship.cs" />
+    <Compile Include="Player\IPlayer.cs" />
+    <Compile Include="Player\LocalPlayer.cs" />
+    <Compile Include="ShipStuff\Segment.cs" />
+    <Compile Include="ShipStuff\Ship.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

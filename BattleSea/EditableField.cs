@@ -80,7 +80,7 @@ namespace BattleSea
 			{
 				var cell = _grid.Rows[rowIndex].Cells[columnIndex];
 				_cellToValue.Add(cell, cell.Value);
-				cell.Value = Resources.ShipSegment;
+				cell.Value = Resources.FantomSegment;
 				if (IsVertical) rowIndex++;
 				else columnIndex++;
 			}
@@ -106,11 +106,15 @@ namespace BattleSea
 			_isVertical = !IsVertical;
 		}
 
-		public void MoveNext()
+		public bool MoveNext()
 		{
 			_shipIndex++;
 			if (!(_shipIndex < _ships.Length))
+			{
 				_isManualMode = false;
+				return false;
+			}
+			return true;
 		}
 	}
 }

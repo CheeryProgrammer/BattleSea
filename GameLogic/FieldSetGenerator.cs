@@ -1,28 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace GameLogic
 {
-	public class Player
+	public class FieldSetGenerator
 	{
-		private readonly int _fieldSize;
-		private int[] _availableShips;
 		private List<Ship> _ships;
-		public IReadOnlyCollection<Point> Segments
+		public IReadOnlyCollection<Ship> Ships
 		{
-			get { return _ships?.SelectMany(ship => ship.Points()).ToList(); }
+			get
+			{
+				if (_ships == null)
+					return GenerateField();
+				else
+					return _ships;
+			}
 		}
+		private readonly int[] _availableShips;
 
+		public int _fieldSize;
 
-		public Player(int fieldSize)
+		public FieldSetGenerator(int[] availableShips, int fieldSize)
 		{
+			_availableShips = availableShips;
 			_fieldSize = fieldSize;
-			_availableShips = Game.AvailableShips;
-			_ships = new List<Ship>(_availableShips.Length);
 		}
 
-		public void GenerateField()
+		public List<Ship> GenerateField()
 		{
 			_ships = new List<Ship>(_availableShips.Length);
 			for (int i = 0; i < _availableShips.Length; i++)
@@ -38,6 +42,7 @@ namespace GameLogic
 
 				} while (!success);
 			}
+			return _ships;
 		}
 
 		public bool TryPutOnField(int ship, Point point, bool isVertical)
@@ -68,7 +73,7 @@ namespace GameLogic
 					? new Point(point.X, point.Y + 1)
 					: new Point(point.X + 1, point.Y);
 			}
-			_ships.Add(new Ship(points, isVertical));
+			_ships.Add(new Ship(points));
 
 			return true;
 		}
@@ -82,11 +87,6 @@ namespace GameLogic
 			else
 				endX += segmentsCount - 1;
 			return point.X >= 0 && point.Y >= 0 && endX < _fieldSize && endY < _fieldSize;
-		}
-
-		internal bool IsReady()
-		{
-			throw new NotImplementedException();
 		}
 
 		private bool IsAllowedNeighborgood(int x, int y)
@@ -104,7 +104,9 @@ namespace GameLogic
 		private bool IsCellEmpty(int x, int y)
 		{
 			return _ships != null
-				&& !_ships.Any(ship => ship != null && ship.HasPoint(x, y));
+				&& !_ships.Any(ship => ship != null
+									   && ship.Segments.Any(seg => seg.Position.X == x
+																   && seg.Position.Y == y));
 		}
 
 		public void ClearField()

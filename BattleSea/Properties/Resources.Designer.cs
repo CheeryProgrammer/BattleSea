@@ -73,9 +73,9 @@ namespace BattleSea.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Irina {
+        internal static System.Drawing.Bitmap FantomSegment {
             get {
-                object obj = ResourceManager.GetObject("Irina", resourceCulture);
+                object obj = ResourceManager.GetObject("FantomSegment", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
