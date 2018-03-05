@@ -72,13 +72,14 @@ namespace BattleSea
 
 		private void btnPCStart_Click(object sender, EventArgs e)
 		{
-			TryStartGame();
+			TryStartGameAsync();
 		}
 
-		private void TryStartGame()
+		private async void TryStartGameAsync()
 		{
-			if(_game.ReadyToPlay())
-				_game.StartGame();
+			tbMessages.AppendText("Connecting..." + Environment.NewLine);
+			if(_game.ReadyToPlay() && await _game.StartGameAsync())
+				tbMessages.AppendText("Connected!" + Environment.NewLine);
 		}
 
 		private void BtnRandomize_Click(object sender, EventArgs e)

@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="FieldSetGenerator.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="Player\HostPlayer.cs" />
     <Compile Include="Player\IPlayer.cs" />
     <Compile Include="Player\LocalPlayer.cs" />
     <Compile Include="ShipStuff\Segment.cs" />

@@ -10,6 +10,6 @@ namespace GameLogic.Player
 	{
 		bool Ready { get; }
 		IReadOnlyCollection<Ship> Ships { get; }
-		bool Initialize(List<Ship> ships = null);
+		Task<bool> Initialize(List<Ship> ships = null);
 	}
 }

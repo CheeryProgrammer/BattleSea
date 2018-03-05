@@ -3,6 +3,7 @@ using GameLogic.ShipStuff;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GameLogic
 {
@@ -24,13 +25,13 @@ namespace GameLogic
 		public Game(int fieldSize)
 		{
 			_player = new LocalPlayer(fieldSize);
-			_rival = new LocalPlayer(fieldSize);
+			_rival = new HostPlayer(fieldSize);
 			FieldGenerator = new FieldSetGenerator(AvailableShips, fieldSize);
 		}
 
-		public void StartGame()
+		public async Task<bool> StartGameAsync()
 		{
-			throw new NotImplementedException();
+			return await _rival.Initialize();
 		}
 
 		public void OnMyFieldClick(int columnIndex, int rowIndex)

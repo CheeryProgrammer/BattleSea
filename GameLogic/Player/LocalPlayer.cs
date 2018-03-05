@@ -1,6 +1,7 @@
 ﻿using GameLogic.Player;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GameLogic
 {
@@ -27,10 +28,11 @@ namespace GameLogic
 			_isReady = true;
 		}
 
-		public bool Initialize(List<Ship> ships = null)
+		public Task<bool> Initialize(List<Ship> ships = null)
 		{
 			_ships = ships;
-			return true;
+			SetReady();
+			return Task.FromResult(true);
 		}
 	}
 }
