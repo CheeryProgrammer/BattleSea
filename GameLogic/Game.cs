@@ -24,24 +24,26 @@ namespace GameLogic
 
 		public Game(int fieldSize)
 		{
-			_player = new LocalPlayer(fieldSize);
-			_rival = new HostPlayer(fieldSize);
 			FieldGenerator = new FieldSetGenerator(AvailableShips, fieldSize);
+			_player = new ClientPlayer(FieldGenerator.GenerateField());
+			_rival = new HostPlayer(FieldGenerator.GenerateField());
 		}
 
 		public async Task<bool> StartGameAsync()
 		{
-			return await _rival.Initialize();
+			return _rival.Initialize("127.0.0.1", 2604)
+				&& _player.Initialize("127.0.0.1", 2604);
 		}
 
-		public void OnMyFieldClick(int columnIndex, int rowIndex)
+		public void OnMyFieldClick(int x, int y)
 		{
+			Player.TryShot(x, y);
 		}
 
 		public void RandomizePlayerField()
 		{
 			var ships = FieldGenerator.GenerateField();
-			Player.Initialize(ships);
+			_player = new LocalPlayer(ships);
 		}
 
 		public bool ReadyToPlay()
@@ -51,7 +53,7 @@ namespace GameLogic
 
 		public void PrepareLocalPlayer()
 		{
-			Player.Initialize(FieldGenerator.Ships.ToList());
+			Player.Initialize();
 		}
 	}
 

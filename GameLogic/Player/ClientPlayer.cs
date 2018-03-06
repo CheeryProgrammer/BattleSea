@@ -5,18 +5,17 @@ using System.Threading.Tasks;
 
 namespace GameLogic.Player
 {
-	class HostPlayer : IPlayer
+	class ClientPlayer : IPlayer
 	{
-		private SocketServer _server;
+		public bool Ready => true;
 		private List<Ship> _ships;
+		private SocketClient _socketClient;
 		private string _lastMessage;
 		private AutoResetEvent _responseWaiter = new AutoResetEvent(false);
 
-		public bool Ready => true;
-
 		public IReadOnlyCollection<Ship> Ships => _ships;
 
-		public HostPlayer(List<Ship> ships)
+		public ClientPlayer(List<Ship> ships)
 		{
 			_ships = ships;
 		}
@@ -25,8 +24,8 @@ namespace GameLogic.Player
 		{
 			try
 			{
-				_server = new SocketServer(ip, port);
-				_server.OnMessageReceived += OnMessageReceived;
+				_socketClient = new SocketClient(ip, port);
+				_socketClient.OnMessageReceived += OnMessageReceived;
 				return true;
 			}
 			catch
@@ -38,14 +37,13 @@ namespace GameLogic.Player
 		private void OnMessageReceived(object sender, string e)
 		{
 			_lastMessage = e;
-			_responseWaiter.Set();
 		}
 
 		public async Task<bool> TryShot(int x, int y)
 		{
-			var task = Task.Run<bool>(() =>
+			var task = Task.Run<bool> (() =>
 			{
-				_server.Send($"shot_{x}_{y}");
+				_socketClient.Send($"shot_{x}_{y}");
 				_responseWaiter.WaitOne();
 				return ParseResponse(_lastMessage);
 			});

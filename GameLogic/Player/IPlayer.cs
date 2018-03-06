@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace GameLogic.Player
@@ -10,6 +7,7 @@ namespace GameLogic.Player
 	{
 		bool Ready { get; }
 		IReadOnlyCollection<Ship> Ships { get; }
-		Task<bool> Initialize(List<Ship> ships = null);
+		bool Initialize(string ip = null, int port = 0);
+		Task<bool> TryShot(int x, int y);
 	}
 }

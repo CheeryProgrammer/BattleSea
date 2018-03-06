@@ -7,8 +7,6 @@ namespace GameLogic
 {
 	public class LocalPlayer : IPlayer
 	{
-		private readonly int _fieldSize;
-		private int[] _availableShips;
 		private List<Ship> _ships;
 		private bool _isReady;
 
@@ -16,11 +14,9 @@ namespace GameLogic
 
 		public IReadOnlyCollection<Ship> Ships => _ships;
 
-		public LocalPlayer(int fieldSize)
+		public LocalPlayer(List<Ship> ships)
 		{
-			_fieldSize = fieldSize;
-			_availableShips = Game.AvailableShips;
-			_ships = new List<Ship>(_availableShips.Length);
+			_ships = ships;
 		}
 
 		internal void SetReady()
@@ -28,11 +24,15 @@ namespace GameLogic
 			_isReady = true;
 		}
 
-		public Task<bool> Initialize(List<Ship> ships = null)
+		public bool Initialize(string ip = null, int port = 0)
 		{
-			_ships = ships;
 			SetReady();
-			return Task.FromResult(true);
+			return true;
+		}
+		
+		public Task<bool> TryShot(int x, int y)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

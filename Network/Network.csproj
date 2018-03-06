@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C381F748-B2AC-4AD7-B285-221FCC1B73F5}</ProjectGuid>
+    <ProjectGuid>{C7A82831-3A96-47AD-AF22-034078931DB5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GameLogic</RootNamespace>
-    <AssemblyName>GameLogic</AssemblyName>
+    <RootNamespace>Network</RootNamespace>
+    <AssemblyName>Network</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -40,21 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FieldSetGenerator.cs" />
-    <Compile Include="Game.cs" />
-    <Compile Include="Player\ClientPlayer.cs" />
-    <Compile Include="Player\HostPlayer.cs" />
-    <Compile Include="Player\IPlayer.cs" />
-    <Compile Include="Player\LocalPlayer.cs" />
-    <Compile Include="ShipStuff\Segment.cs" />
-    <Compile Include="ShipStuff\Ship.cs" />
+    <Compile Include="SocketClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Network\Network.csproj">
-      <Project>{C7A82831-3A96-47AD-AF22-034078931DB5}</Project>
-      <Name>Network</Name>
-    </ProjectReference>
+    <Compile Include="SocketServer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
