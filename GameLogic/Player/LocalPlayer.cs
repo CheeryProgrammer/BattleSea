@@ -1,6 +1,7 @@
 ﻿using GameLogic.Player;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GameLogic
@@ -30,9 +31,10 @@ namespace GameLogic
 			return true;
 		}
 		
-		public Task<bool> TryShot(int x, int y)
+		public bool TryShot(int x, int y)
 		{
-			throw new NotImplementedException();
+			var p = new Point(x, y);
+			return _ships.Any(s=>s.AcceptShot(p));
 		}
 	}
 }

@@ -9,8 +9,10 @@ using System.Threading.Tasks;
 
 namespace Network
 {
-	public class SocketServer
+	public class SocketServer: ISocket
 	{
+		private static readonly object _locker = new object();
+
 		private Socket _socket;
 		private CancellationTokenSource _cancellationTokenSource;
 		private Socket _client;
@@ -25,7 +27,7 @@ namespace Network
 			InitializeSocket(ip, port);
 		}
 
-		private async void InitializeSocket(string ip, int port)
+		private void InitializeSocket(string ip, int port)
 		{
 			_cancellationTokenSource.Cancel();
 			_cancellationTokenSource = new CancellationTokenSource();
@@ -42,31 +44,54 @@ namespace Network
 			{
 				ListenMessages();
 			}, _cancellationTokenSource.Token);
-			await listeningTask;
+			listeningTask.Wait();
 		}
 
 		private void ListenMessages()
 		{
 			while (!_cancellationTokenSource.Token.IsCancellationRequested)
 			{
-				while (_client.Available <= 0)
-					Thread.Sleep(10);
-
-				string msg = string.Empty;
-				while (_client.Available > 0)
+				WaitForInputData();
+				lock (_locker)
 				{
-					var buffer = new byte[256];
-					var receivedCount = _client.Receive(buffer, buffer.Length, SocketFlags.None);
-					msg += Encoding.ASCII.GetString(buffer, 0, receivedCount);
+					string msg = ReadMessage();
+					OnMessageReceived?.Invoke(this, msg);
 				}
-				OnMessageReceived?.Invoke(this, msg);
 			}
+		}
+
+		private string ReadMessage()
+		{
+			string msg = string.Empty;
+			while (_client.Available > 0)
+			{
+				var buffer = new byte[256];
+				var receivedCount = _client.Receive(buffer, buffer.Length, SocketFlags.None);
+				msg += Encoding.ASCII.GetString(buffer, 0, receivedCount);
+			}
+			return msg;
 		}
 
 		public void Send(string message)
 		{
 			var sendData = Encoding.ASCII.GetBytes(message);
-			_socket.Send(sendData, sendData.Length, SocketFlags.None);
+			_client.Send(sendData, sendData.Length, SocketFlags.None);
+		}
+
+		private void WaitForInputData()
+		{
+			while (_client.Available <= 0)
+				Thread.Sleep(10);
+		}
+
+		public string Request(string message)
+		{
+			lock (_locker)
+			{
+				Send(message);
+				WaitForInputData();
+				return ReadMessage();
+			}
 		}
 	}
 }

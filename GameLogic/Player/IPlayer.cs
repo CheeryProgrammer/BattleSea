@@ -8,6 +8,6 @@ namespace GameLogic.Player
 		bool Ready { get; }
 		IReadOnlyCollection<Ship> Ships { get; }
 		bool Initialize(string ip = null, int port = 0);
-		Task<bool> TryShot(int x, int y);
+		bool TryShot(int x, int y);
 	}
 }

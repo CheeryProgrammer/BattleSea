@@ -11,11 +11,12 @@ namespace GameLogic
 	{
 		public FieldSetGenerator FieldGenerator { get; private set; }
 		private IPlayer _player;
-		private IPlayer _rival;
+		private IRival _rival;
 
 		public static readonly int[] AvailableShips = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
 
-		public IReadOnlyCollection<Segment> Segments { get => Player.Ships.SelectMany(s => s.Segments).ToList(); }
+		//public IReadOnlyCollection<Segment> Segments { get => Player.Ships.SelectMany(s => s.Segments).ToList(); }
+		public IReadOnlyCollection<Segment> Segments { get => FieldGenerator.Ships.SelectMany(s => s.Segments).ToList(); }
 
 		public IPlayer Player
 		{
@@ -24,20 +25,18 @@ namespace GameLogic
 
 		public Game(int fieldSize)
 		{
-			FieldGenerator = new FieldSetGenerator(AvailableShips, fieldSize);
-			_player = new ClientPlayer(FieldGenerator.GenerateField());
-			_rival = new HostPlayer(FieldGenerator.GenerateField());
+			FieldGenerator = new FieldSetGenerator(AvailableShips, fieldSize);			
 		}
 
-		public async Task<bool> StartGameAsync()
+		public async Task<bool> StartGameAsync(bool isHost = true)
 		{
-			return _rival.Initialize("127.0.0.1", 2604)
-				&& _player.Initialize("127.0.0.1", 2604);
+			return await _rival.Initialize("127.0.0.1", 2604, isHost)
+				&& _player.Initialize();
 		}
 
-		public void OnMyFieldClick(int x, int y)
+		public Task<bool> OnRivalFieldClickAsync(int x, int y)
 		{
-			Player.TryShot(x, y);
+			return _rival.TryShot(x, y);
 		}
 
 		public void RandomizePlayerField()
@@ -46,14 +45,34 @@ namespace GameLogic
 			_player = new LocalPlayer(ships);
 		}
 
-		public bool ReadyToPlay()
+		public bool Ready()
 		{
-			return Player.Ready && _rival.Ready;
+			return _player != null
+				&& _player.Ready
+				&& _rival != null
+				&& _rival.Ready;
 		}
 
-		public void PrepareLocalPlayer()
+		public void InitializeHostGame()
 		{
-			Player.Initialize();
+			_player = new LocalPlayer(FieldGenerator.Ships.ToList());
+			_rival = new NetworkPlayer();
+			_rival.OnShot += Rival_OnShot;
+		}
+
+		private void Rival_OnShot(object sender, ShotEvent e)
+		{
+			var rival = sender as IRival;
+			if (_player.TryShot(e.X, e.Y))
+				rival.ReturnFired();
+			else
+				rival.ReturnMissed();
+		}
+
+		public void InitializeJoinGame()
+		{
+			_player = new LocalPlayer(FieldGenerator.Ships.ToList());
+			_rival = new NetworkPlayer();
 		}
 	}
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GameLogic
@@ -11,9 +12,8 @@ namespace GameLogic
 			get
 			{
 				if (_ships == null)
-					return GenerateField();
-				else
-					return _ships;
+					_ships = new List<Ship>();
+				return _ships;
 			}
 		}
 		private readonly int[] _availableShips;
@@ -75,6 +75,20 @@ namespace GameLogic
 			}
 			_ships.Add(new Ship(points));
 
+			return true;
+		}
+
+		public bool HasValidSet()
+		{
+			var actual = _ships.Select(ship => ship.Segments.Count).GroupBy(count => count);
+			var expected = _availableShips.GroupBy(count => count);
+			foreach(var group in expected)
+			{
+				var key = group.Key;
+				var act = actual.FirstOrDefault(g => g.Key == key);
+				if (act == null || act.Count() != group.Count())
+					return false;
+			}
 			return true;
 		}
 

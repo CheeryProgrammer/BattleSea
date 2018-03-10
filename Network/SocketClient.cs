@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 
 namespace Network
 {
-	public class SocketClient
+	public class SocketClient: ISocket
 	{
+		private static readonly object _locker = new object();
+
 		private Socket _socket;
 		private CancellationTokenSource _cancellationTokenSource;
 
@@ -22,7 +24,7 @@ namespace Network
 			InitializeSocket(ip, port);
 		}
 
-		private async void InitializeSocket(string ip, int port)
+		private void InitializeSocket(string ip, int port)
 		{
 			_cancellationTokenSource.Cancel();
 			_cancellationTokenSource = new CancellationTokenSource();
@@ -37,31 +39,54 @@ namespace Network
 			{
 				ListenMessages();
 			}, _cancellationTokenSource.Token);
-			await connectingTask;
+			connectingTask.Wait();
 		}
 
 		private void ListenMessages()
 		{
 			while (!_cancellationTokenSource.Token.IsCancellationRequested)
 			{
-				while (_socket.Available <= 0)
-					Thread.Sleep(10);
-
-				string msg = string.Empty;
-				while (_socket.Available > 0)
+				WaitForInputData();
+				lock (_locker)
 				{
-					var buffer = new byte[256];
-					var receivedCount = _socket.Receive(buffer, buffer.Length, SocketFlags.None);
-					msg += Encoding.ASCII.GetString(buffer, 0, receivedCount);
+					string msg = ReadMessage();
+					OnMessageReceived?.Invoke(this, msg);
 				}
-				OnMessageReceived?.Invoke(this, msg);
 			}
+		}
+
+		private void WaitForInputData()
+		{
+			while (_socket.Available <= 0)
+				Thread.Sleep(10);
+		}
+
+		private string ReadMessage()
+		{
+			string msg = string.Empty;
+			while (_socket.Available > 0)
+			{
+				var buffer = new byte[256];
+				var receivedCount = _socket.Receive(buffer, buffer.Length, SocketFlags.None);
+				msg += Encoding.ASCII.GetString(buffer, 0, receivedCount);
+			}
+			return msg;
 		}
 
 		public void Send(string message)
 		{
 			var sendData = Encoding.ASCII.GetBytes(message);
 			_socket.Send(sendData, sendData.Length, SocketFlags.None);
+		}
+
+		public string Request(string message)
+		{
+			lock (_locker)
+			{
+				Send(message);
+				WaitForInputData();
+				return ReadMessage();
+			}
 		}
 	}
 }

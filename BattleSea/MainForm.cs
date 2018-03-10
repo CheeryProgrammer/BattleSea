@@ -41,6 +41,23 @@ namespace BattleSea
 			}
 		}
 
+		private void RenderRivalField()
+		{
+			IEnumerable<Point> points = null;
+			if (_editableField.Enabled)
+				points = _game.FieldGenerator.Ships
+					.SelectMany(s => s.Segments)
+					.Select(seg => seg.Position);
+			else
+				points = _game.Segments?.Select(seg => seg.Position);
+
+			foreach (var point in points)
+			{
+				var p = Common.DeNormalizeCoordinates(point);
+				dgvMy.Rows[p.Y].Cells[p.X].Value = Resources.ShipSegment;
+			}
+		}
+
 		private void InitFields()
 		{
 			ClearField(dgvEnemy);
@@ -62,15 +79,9 @@ namespace BattleSea
 
 		private void DgvMy_CellClick(object sender, DataGridViewCellEventArgs e)
 		{
-			OnMyFieldClick(e.ColumnIndex, e.RowIndex);
 		}
 
-		private void OnMyFieldClick(int columnIndex, int rowIndex)
-		{
-			_game.OnMyFieldClick(columnIndex, rowIndex);
-		}
-
-		private void btnPCStart_Click(object sender, EventArgs e)
+		private void BtnPCStart_Click(object sender, EventArgs e)
 		{
 			TryStartGameAsync();
 		}
@@ -78,7 +89,7 @@ namespace BattleSea
 		private async void TryStartGameAsync()
 		{
 			tbMessages.AppendText("Connecting..." + Environment.NewLine);
-			if(_game.ReadyToPlay() && await _game.StartGameAsync())
+			if(_game.Ready() && await _game.StartGameAsync())
 				tbMessages.AppendText("Connected!" + Environment.NewLine);
 		}
 
@@ -93,7 +104,6 @@ namespace BattleSea
 		{
 			ClearField(dgvMy);
 			_game.FieldGenerator.ClearField();
-			_game.Player.Initialize();
 			_editableField.BeginEdit(Game.AvailableShips);
 		}
 
@@ -107,6 +117,16 @@ namespace BattleSea
 
 		private void DgvMy_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
 		{
+			HandleMouseOnMyClick(e);
+		}
+
+		private void DgvEnemy_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+		{
+			HandleMouseEnemyClick(e);
+		}
+
+		private async void HandleMouseOnMyClick(DataGridViewCellMouseEventArgs e)
+		{
 			if (!_editableField.Enabled) return;
 			var p = Common.NormalizeCoordinates(e.ColumnIndex, e.RowIndex);
 			if (e.Button == MouseButtons.Right)
@@ -119,11 +139,49 @@ namespace BattleSea
 				var limit = Common.FieldSize - _editableField.CurrentShip;
 				var x = !_editableField.IsVertical && p.X >= limit ? limit : p.X;
 				var y = _editableField.IsVertical && p.Y >= limit ? limit : p.Y;
-				if (_game.FieldGenerator.TryPutOnField(_editableField.CurrentShip, new Point(x,y), _editableField.IsVertical))
+				if (_game.FieldGenerator.TryPutOnField(_editableField.CurrentShip, new Point(x, y), _editableField.IsVertical))
 				{
 					RenderMyField();
-					if (!_editableField.MoveNext())
-						_game.PrepareLocalPlayer();
+					_editableField.MoveNext();
+				}
+			}
+		}
+
+		private async void HandleMouseEnemyClick(DataGridViewCellMouseEventArgs e)
+		{
+			var p = Common.NormalizeCoordinates(e.ColumnIndex, e.RowIndex);
+			if (e.Button == MouseButtons.Left)
+			{
+				var success = await _game.OnRivalFieldClickAsync(p.X, p.Y);
+				dgvEnemy.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = success
+					? Resources.Fired
+					: Resources.Missed;
+			}
+		}
+
+		private async void BtnHostGame_Click(object sender, EventArgs e)
+		{
+			tbMessages.AppendText("Connecting...\n");
+			if (_game.FieldGenerator.HasValidSet())
+			{
+				_game.InitializeHostGame();
+				await _game.StartGameAsync(true);
+				tbMessages.AppendText("Connected\n");
+				RenderRivalField();
+			}
+		}
+
+		private async void BtnJoinGame_Click(object sender, EventArgs e)
+		{
+			tbMessages.AppendText("Connecting...\n");
+			if (_game.FieldGenerator.HasValidSet())
+			{
+				_game.InitializeHostGame();
+				var success = await _game.StartGameAsync(false);
+				if (success)
+				{
+					tbMessages.AppendText("Connected\n");
+					RenderRivalField();
 				}
 			}
 		}

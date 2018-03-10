@@ -96,5 +96,11 @@
   <ItemGroup>
     <None Include="Resources\ShipSegment.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Missed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\fired.bmp" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

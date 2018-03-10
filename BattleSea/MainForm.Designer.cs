@@ -70,12 +70,19 @@
 			this.btnRandomize = new System.Windows.Forms.Button();
 			this.btnPCStart = new System.Windows.Forms.Button();
 			this.tbLAN = new System.Windows.Forms.TabPage();
+			this.label1 = new System.Windows.Forms.Label();
+			this.tbPort = new System.Windows.Forms.TextBox();
+			this.lblHost = new System.Windows.Forms.Label();
+			this.btnJoinGame = new System.Windows.Forms.Button();
+			this.tbAddress = new System.Windows.Forms.TextBox();
+			this.btnHostGame = new System.Windows.Forms.Button();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
 			this.tbMessages = new System.Windows.Forms.TextBox();
 			((System.ComponentModel.ISupportInitialize)(this.dgvMy)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.dgvEnemy)).BeginInit();
 			this.tabControl1.SuspendLayout();
 			this.tbPC.SuspendLayout();
+			this.tbLAN.SuspendLayout();
 			this.groupBox1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -142,6 +149,7 @@
 			this.dgvMy.TabIndex = 0;
 			this.dgvMy.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DgvMy_CellClick);
 			this.dgvMy.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.DgvMy_CellMouseClick);
+			this.dgvMy.CellMouseDoubleClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.DgvMy_CellMouseClick);
 			this.dgvMy.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.DgvMy_CellMouseEnter);
 			// 
 			// colRows
@@ -306,6 +314,7 @@
 			this.dgvEnemy.ShowRowErrors = false;
 			this.dgvEnemy.Size = new System.Drawing.Size(266, 266);
 			this.dgvEnemy.TabIndex = 1;
+			this.dgvEnemy.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.DgvEnemy_CellMouseClick);
 			// 
 			// dataGridViewTextBoxColumn1
 			// 
@@ -479,10 +488,16 @@
 			this.btnPCStart.TabIndex = 0;
 			this.btnPCStart.Text = "Start";
 			this.btnPCStart.UseVisualStyleBackColor = true;
-			this.btnPCStart.Click += new System.EventHandler(this.btnPCStart_Click);
+			this.btnPCStart.Click += new System.EventHandler(this.BtnPCStart_Click);
 			// 
 			// tbLAN
 			// 
+			this.tbLAN.Controls.Add(this.label1);
+			this.tbLAN.Controls.Add(this.tbPort);
+			this.tbLAN.Controls.Add(this.lblHost);
+			this.tbLAN.Controls.Add(this.btnJoinGame);
+			this.tbLAN.Controls.Add(this.tbAddress);
+			this.tbLAN.Controls.Add(this.btnHostGame);
 			this.tbLAN.Location = new System.Drawing.Point(4, 22);
 			this.tbLAN.Name = "tbLAN";
 			this.tbLAN.Padding = new System.Windows.Forms.Padding(3);
@@ -490,6 +505,60 @@
 			this.tbLAN.TabIndex = 1;
 			this.tbLAN.Text = "Game on LAN";
 			this.tbLAN.UseVisualStyleBackColor = true;
+			// 
+			// label1
+			// 
+			this.label1.AutoSize = true;
+			this.label1.Location = new System.Drawing.Point(142, 11);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(26, 13);
+			this.label1.TabIndex = 1;
+			this.label1.Text = "Port";
+			// 
+			// tbPort
+			// 
+			this.tbPort.Location = new System.Drawing.Point(145, 27);
+			this.tbPort.Name = "tbPort";
+			this.tbPort.Size = new System.Drawing.Size(107, 20);
+			this.tbPort.TabIndex = 1;
+			this.tbPort.Text = "2604";
+			// 
+			// lblHost
+			// 
+			this.lblHost.AutoSize = true;
+			this.lblHost.Location = new System.Drawing.Point(6, 11);
+			this.lblHost.Name = "lblHost";
+			this.lblHost.Size = new System.Drawing.Size(45, 13);
+			this.lblHost.TabIndex = 1;
+			this.lblHost.Text = "Address";
+			// 
+			// btnJoinGame
+			// 
+			this.btnJoinGame.Location = new System.Drawing.Point(177, 72);
+			this.btnJoinGame.Name = "btnJoinGame";
+			this.btnJoinGame.Size = new System.Drawing.Size(75, 23);
+			this.btnJoinGame.TabIndex = 0;
+			this.btnJoinGame.Text = "Join";
+			this.btnJoinGame.UseVisualStyleBackColor = true;
+			this.btnJoinGame.Click += new System.EventHandler(this.BtnJoinGame_Click);
+			// 
+			// tbAddress
+			// 
+			this.tbAddress.Location = new System.Drawing.Point(9, 27);
+			this.tbAddress.Name = "tbAddress";
+			this.tbAddress.Size = new System.Drawing.Size(130, 20);
+			this.tbAddress.TabIndex = 1;
+			this.tbAddress.Text = "127.0.0.1";
+			// 
+			// btnHostGame
+			// 
+			this.btnHostGame.Location = new System.Drawing.Point(93, 72);
+			this.btnHostGame.Name = "btnHostGame";
+			this.btnHostGame.Size = new System.Drawing.Size(75, 23);
+			this.btnHostGame.TabIndex = 0;
+			this.btnHostGame.Text = "Host";
+			this.btnHostGame.UseVisualStyleBackColor = true;
+			this.btnHostGame.Click += new System.EventHandler(this.BtnHostGame_Click);
 			// 
 			// groupBox1
 			// 
@@ -514,7 +583,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(565, 440);
+			this.ClientSize = new System.Drawing.Size(565, 441);
 			this.Controls.Add(this.groupBox1);
 			this.Controls.Add(this.tabControl1);
 			this.Controls.Add(this.dgvEnemy);
@@ -528,6 +597,8 @@
 			((System.ComponentModel.ISupportInitialize)(this.dgvEnemy)).EndInit();
 			this.tabControl1.ResumeLayout(false);
 			this.tbPC.ResumeLayout(false);
+			this.tbLAN.ResumeLayout(false);
+			this.tbLAN.PerformLayout();
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox1.PerformLayout();
 			this.ResumeLayout(false);
@@ -567,6 +638,12 @@
 		private System.Windows.Forms.TextBox tbMessages;
 		private System.Windows.Forms.Button btnRandomize;
 		private System.Windows.Forms.Button btnManual;
+		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.TextBox tbPort;
+		private System.Windows.Forms.Label lblHost;
+		private System.Windows.Forms.Button btnJoinGame;
+		private System.Windows.Forms.TextBox tbAddress;
+		private System.Windows.Forms.Button btnHostGame;
 	}
 }
 
