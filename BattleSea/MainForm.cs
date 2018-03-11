@@ -153,10 +153,12 @@ namespace BattleSea
 
 		private async void HandleMouseEnemyClick(DataGridViewCellMouseEventArgs e)
 		{
+			if (!_game.MyTurn) return;
 			var p = Common.NormalizeCoordinates(e.ColumnIndex, e.RowIndex);
+			if (p.X < 0 || p.X > 9 || p.Y < 0 || p.Y > 9) return;
 			if (e.Button == MouseButtons.Left)
 			{
-				var success = await _game.OnRivalFieldClickAsync(p.X, p.Y);
+				var success = await _game.ShotAsync(p.X, p.Y);
 				dgvEnemy.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = success
 					? Resources.Fired
 					: Resources.Missed;

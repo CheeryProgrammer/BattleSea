@@ -12,7 +12,7 @@ namespace GameLogic
 		public FieldSetGenerator FieldGenerator { get; private set; }
 		private IPlayer _player;
 		private IRival _rival;
-
+		public bool MyTurn { get; private set; }
 		public static readonly int[] AvailableShips = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
 
 		//public IReadOnlyCollection<Segment> Segments { get => Player.Ships.SelectMany(s => s.Segments).ToList(); }
@@ -30,13 +30,18 @@ namespace GameLogic
 
 		public async Task<bool> StartNetworkGameAsync(string ip, int port, bool isHost = true)
 		{
+			MyTurn = isHost;
 			return await _rival.Initialize(ip, port, isHost)
 				&& _player.Initialize();
 		}
 
-		public Task<bool> OnRivalFieldClickAsync(int x, int y)
+		public Task<bool> ShotAsync(int x, int y)
 		{
-			return _rival.TryShot(x, y);
+			return _rival.TryShot(x, y).ContinueWith( t =>
+			{
+				MyTurn = t.Result;
+				return MyTurn;
+			});
 		}
 
 		public void RandomizePlayerField()
@@ -64,9 +69,14 @@ namespace GameLogic
 		{
 			var rival = sender as IRival;
 			if (_player.TryShot(e.X, e.Y))
+			{
 				rival.ReturnFired();
+			}
 			else
+			{
 				rival.ReturnMissed();
+				MyTurn = true;
+			}
 		}
 
 		public void InitializeJoinGame()
