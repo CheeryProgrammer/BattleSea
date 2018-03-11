@@ -109,10 +109,11 @@ namespace BattleSea
 
 		private void DgvMy_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
 		{
+			if (!_editableField.Enabled)
+				return;
 			var p = Common.NormalizeCoordinates(e.ColumnIndex, e.RowIndex);
-			tbMessages.AppendText($"X: {e.ColumnIndex}, Y: {e.RowIndex} => Xn: {p.X}, Yn: {p.Y}\n");
 			_editableField.DrawFake(p.X, p.Y);
-				RenderMyField();
+			RenderMyField();
 		}
 
 		private void DgvMy_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -142,7 +143,8 @@ namespace BattleSea
 				if (_game.FieldGenerator.TryPutOnField(_editableField.CurrentShip, new Point(x, y), _editableField.IsVertical))
 				{
 					RenderMyField();
-					_editableField.MoveNext();
+					if(!_editableField.MoveNext())
+						tbMessages.AppendText("Setting up finished! You can start playing!\n");
 				}
 			}
 		}
@@ -161,21 +163,25 @@ namespace BattleSea
 
 		private async void BtnHostGame_Click(object sender, EventArgs e)
 		{
-			tbMessages.AppendText("Connecting...\n");
 			if (_game.FieldGenerator.HasValidSet())
 			{
+				tbMessages.AppendText("Connecting...\n");
 				_game.InitializeHostGame();
 				await _game.StartGameAsync(true);
 				tbMessages.AppendText("Connected\n");
 				RenderRivalField();
 			}
+			else
+			{
+				AskSetupField();
+			}
 		}
 
 		private async void BtnJoinGame_Click(object sender, EventArgs e)
 		{
-			tbMessages.AppendText("Connecting...\n");
 			if (_game.FieldGenerator.HasValidSet())
 			{
+				tbMessages.AppendText("Connecting...\n");
 				_game.InitializeHostGame();
 				var success = await _game.StartGameAsync(false);
 				if (success)
@@ -184,6 +190,15 @@ namespace BattleSea
 					RenderRivalField();
 				}
 			}
+			else
+			{
+				AskSetupField();
+			}
+		}
+
+		private void AskSetupField()
+		{
+			tbMessages.AppendText("Please, set up your field\n");
 		}
 	}
 }

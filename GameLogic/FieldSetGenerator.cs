@@ -80,7 +80,7 @@ namespace GameLogic
 
 		public bool HasValidSet()
 		{
-			var actual = _ships.Select(ship => ship.Segments.Count).GroupBy(count => count);
+			var actual = Ships.Select(ship => ship.Segments.Count).GroupBy(count => count);
 			var expected = _availableShips.GroupBy(count => count);
 			foreach(var group in expected)
 			{
