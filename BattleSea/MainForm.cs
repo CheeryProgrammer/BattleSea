@@ -3,6 +3,7 @@ using GameLogic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace BattleSea
@@ -86,15 +87,16 @@ namespace BattleSea
 			TryStartGameAsync();
 		}
 
-		private async void TryStartGameAsync()
+		private void TryStartGameAsync()
 		{
-			tbMessages.AppendText("Connecting..." + Environment.NewLine);
-			if(_game.Ready() && await _game.StartGameAsync())
-				tbMessages.AppendText("Connected!" + Environment.NewLine);
+			/*tbMessages.AppendText("Connecting..." + Environment.NewLine);
+			if(_game.Ready() && await _game.StartNetworkGameAsync(tbAddress.Text, ))
+				tbMessages.AppendText("Connected!" + Environment.NewLine);*/
 		}
 
 		private void BtnRandomize_Click(object sender, EventArgs e)
 		{
+			_editableField.Disable();
 			ClearField(dgvMy);
 			_game.RandomizePlayerField();
 			RenderMyField();
@@ -126,7 +128,7 @@ namespace BattleSea
 			HandleMouseEnemyClick(e);
 		}
 
-		private async void HandleMouseOnMyClick(DataGridViewCellMouseEventArgs e)
+		private void HandleMouseOnMyClick(DataGridViewCellMouseEventArgs e)
 		{
 			if (!_editableField.Enabled) return;
 			var p = Common.NormalizeCoordinates(e.ColumnIndex, e.RowIndex);
@@ -163,42 +165,41 @@ namespace BattleSea
 
 		private async void BtnHostGame_Click(object sender, EventArgs e)
 		{
-			if (_game.FieldGenerator.HasValidSet())
-			{
-				tbMessages.AppendText("Connecting...\n");
-				_game.InitializeHostGame();
-				await _game.StartGameAsync(true);
-				tbMessages.AppendText("Connected\n");
-				RenderRivalField();
-			}
-			else
-			{
-				AskSetupField();
-			}
+			await InitNetworkGame(true);
 		}
 
 		private async void BtnJoinGame_Click(object sender, EventArgs e)
 		{
+			await InitNetworkGame(false);
+		}
+
+		private async Task InitNetworkGame(bool isHost)
+		{
 			if (_game.FieldGenerator.HasValidSet())
 			{
+				btnHostGame.Enabled = false;
+				btnJoinGame.Enabled = false;
 				tbMessages.AppendText("Connecting...\n");
-				_game.InitializeHostGame();
-				var success = await _game.StartGameAsync(false);
+				_game.InitializeNetworkGame();
+				var ip = tbAddress.Text;
+				int.TryParse(tbPort.Text, out int port);
+				var success = await _game.StartNetworkGameAsync(ip, port, isHost);
 				if (success)
 				{
 					tbMessages.AppendText("Connected\n");
 					RenderRivalField();
 				}
+				else
+				{
+					btnHostGame.Enabled = true;
+					btnJoinGame.Enabled = true;
+					tbMessages.AppendText("Error while connecting. Check connection!");
+				}
 			}
 			else
 			{
-				AskSetupField();
+				tbMessages.AppendText("Please, set up your field\n");
 			}
-		}
-
-		private void AskSetupField()
-		{
-			tbMessages.AppendText("Please, set up your field\n");
 		}
 	}
 }

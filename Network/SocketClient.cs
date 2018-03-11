@@ -5,26 +5,35 @@ using System.Threading.Tasks;
 
 namespace Network
 {
-	public class SocketClient: SocketBase, ISocket
+	public class SocketClient: SocketBase
 	{
 		public SocketClient(string ip, int port): base(ip, port) { }
 
-		protected sealed override void InitializeSocket(string ip, int port)
+		public sealed override Task<bool> InitializeSocket()
 		{
 			_cancellationTokenSource.Cancel();
 			_cancellationTokenSource = new CancellationTokenSource();
 			var connectingTask = Task.Run(() =>
 			{
-				var hostEntry = Dns.GetHostEntry(ip);
-				var address = hostEntry.AddressList[0];
-				_socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-				_socket.Connect(new IPEndPoint(address, port));
+				try
+				{
+					var hostEntry = Dns.GetHostEntry(_ip);
+					var address = hostEntry.AddressList[0];
+					_socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+					_socket.Connect(new IPEndPoint(address, _port));
+					return true;
+				}
+				catch
+				{
+					// ignored
+				}
+				return false;
 			});
 			connectingTask.ContinueWith(t =>
 			{
 				ListenMessages(_cancellationTokenSource.Token);
 			}, _cancellationTokenSource.Token);
-			connectingTask.Wait();
+			return connectingTask;
 		}
 	}
 }

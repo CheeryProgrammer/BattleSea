@@ -24,7 +24,7 @@ namespace GameLogic.Player
 
 		public Task<bool> Initialize(string ip, int port, bool isHost)
 		{
-			return Task<bool>.Run(()=>
+			return Task.Run(()=>
 			{
 				try
 				{
@@ -32,12 +32,13 @@ namespace GameLogic.Player
 						? (ISocket)new SocketServer(ip, port)
 						: new SocketClient(ip, port);
 					_server.OnMessageReceived += OnMessageReceived;
-					return true;
+					return _server.InitializeSocket().Result;
 				}
 				catch
 				{
-					return false;
+					// ignored
 				}
+				return false;
 			});
 		}
 

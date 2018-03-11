@@ -28,9 +28,9 @@ namespace GameLogic
 			FieldGenerator = new FieldSetGenerator(AvailableShips, fieldSize);			
 		}
 
-		public async Task<bool> StartGameAsync(bool isHost = true)
+		public async Task<bool> StartNetworkGameAsync(string ip, int port, bool isHost = true)
 		{
-			return await _rival.Initialize("127.0.0.1", 2604, isHost)
+			return await _rival.Initialize(ip, port, isHost)
 				&& _player.Initialize();
 		}
 
@@ -53,7 +53,7 @@ namespace GameLogic
 				&& _rival.Ready;
 		}
 
-		public void InitializeHostGame()
+		public void InitializeNetworkGame()
 		{
 			_player = new LocalPlayer(FieldGenerator.Ships.ToList());
 			_rival = new NetworkPlayer();

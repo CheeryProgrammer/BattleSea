@@ -1,11 +1,7 @@
 ﻿using BattleSea.Properties;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using GameLogic;
 
 namespace BattleSea
 {
@@ -115,6 +111,11 @@ namespace BattleSea
 				return false;
 			}
 			return true;
+		}
+
+		internal void Disable()
+		{
+			_isManualMode = false;
 		}
 	}
 }

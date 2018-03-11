@@ -2,12 +2,15 @@
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Network
 {
-	public abstract class SocketBase
+	public abstract class SocketBase: ISocket
 	{
 		private static readonly object _locker = new object();
+		protected readonly string _ip;
+		protected readonly int _port;
 		protected Socket _socket;
 		protected CancellationTokenSource _cancellationTokenSource;
 
@@ -17,11 +20,12 @@ namespace Network
 		{
 			if (string.IsNullOrWhiteSpace(ip))
 				throw new ArgumentException();
+			_ip = ip;
+			_port = port;
 			_cancellationTokenSource = new CancellationTokenSource();
-			InitializeSocket(ip, port);
 		}
 
-		protected abstract void InitializeSocket(string ip, int port);
+		public abstract Task<bool> InitializeSocket();
 
 		protected void ListenMessages(CancellationToken token)
 		{
