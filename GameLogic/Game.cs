@@ -15,7 +15,8 @@ namespace GameLogic
 		public bool MyTurn { get; private set; }
 		public static readonly int[] AvailableShips = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
 
-		//public IReadOnlyCollection<Segment> Segments { get => Player.Ships.SelectMany(s => s.Segments).ToList(); }
+		public event EventHandler<ShotResultEvent> OnShot;
+
 		public IReadOnlyCollection<Segment> Segments { get => FieldGenerator.Ships.SelectMany(s => s.Segments).ToList(); }
 
 		public IPlayer Player
@@ -68,7 +69,8 @@ namespace GameLogic
 		private void Rival_OnShot(object sender, ShotEvent e)
 		{
 			var rival = sender as IRival;
-			if (_player.TryShot(e.X, e.Y))
+			bool result = _player.TryShot(e.X, e.Y);
+			if (result)
 			{
 				rival.ReturnFired();
 			}
@@ -77,6 +79,7 @@ namespace GameLogic
 				rival.ReturnMissed();
 				MyTurn = true;
 			}
+			OnShot?.Invoke(this, new ShotResultEvent(e.X, e.Y, result));
 		}
 
 		public void InitializeJoinGame()

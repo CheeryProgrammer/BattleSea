@@ -1,5 +1,6 @@
 ﻿using BattleSea.Properties;
 using GameLogic;
+using GameLogic.Player;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,17 @@ namespace BattleSea
 		{
 			InitFields();
 			_game = new Game(Common.FieldSize);
+			_game.OnShot += Game_OnShot;
 			_editableField = new EditableField(dgvMy);
+		}
+
+		private void Game_OnShot(object sender, ShotResultEvent e)
+		{
+			dgvMy.Invoke(new Action(() => 
+			{
+				var p = Common.DeNormalizeCoordinates(e.X, e.Y);
+				dgvMy.Rows[p.Y].Cells[p.X].Value = e.Result ? Resources.Fired : Resources.Missed;
+			}));
 		}
 
 		private void RenderMyField()

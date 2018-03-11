@@ -27,4 +27,13 @@ namespace GameLogic.Player
 			Y = y;
 		}
 	}
+
+	public class ShotResultEvent : ShotEvent
+	{
+		public bool Result { get; }
+		public ShotResultEvent(int x, int y, bool result):base(x, y)
+		{
+			Result = result;
+		}
+	}
 }
