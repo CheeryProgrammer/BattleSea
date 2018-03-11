@@ -8,6 +8,13 @@ namespace GameLogic
 	public class Ship
 	{
 		private List<Segment> _segments;
+		public bool IsAlive
+		{
+			get
+			{
+				return _segments.Any(seg => seg.State == SegmentState.Alive);
+			}
+		}
 
 		public Ship(IReadOnlyCollection<Point> points)
 		{
@@ -21,9 +28,9 @@ namespace GameLogic
 			get { return _segments; }
 		}
 
-		public bool AcceptShot(Point p)
+		public bool TryAcceptShot(Point p)
 		{
-			return _segments.Any(seg => seg.AcceptShot(p));
+			return _segments.Any(seg => seg.TryAcceptShot(p));
 		}
 
 		internal bool TryFire(int x, int y)

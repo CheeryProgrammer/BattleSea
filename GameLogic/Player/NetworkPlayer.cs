@@ -1,7 +1,5 @@
 ﻿using Network;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,12 +13,6 @@ namespace GameLogic.Player
 		private AutoResetEvent _responseWaiter = new AutoResetEvent(false);
 
 		public event EventHandler<ShotEvent> OnShot;
-
-		private List<Point> _missed;
-		private List<Point> _fired;
-
-		public IReadOnlyCollection<Point> Missed => _missed;
-		public IReadOnlyCollection<Point> Fired => _fired;
 
 		public Task<bool> Initialize(string ip, int port, bool isHost)
 		{
@@ -72,19 +64,34 @@ namespace GameLogic.Player
 			return int.TryParse(tokens[1], out x) && int.TryParse(tokens[2], out y);
 		}
 
-		public Task<bool> TryShot(int x, int y)
+		public Task<ShotResult> Shot(int x, int y)
 		{
-			return Task.Run<bool>(() =>
+			return Task.Run(() =>
 			{
 				var response = _server.Request($"shot_{x}_{y}");
 				return ParseResponse(response);
 			});
 		}
 
-		private bool ParseResponse(string lastMessage)
+		private ShotResult ParseResponse(string message)
 		{
-			return !string.IsNullOrWhiteSpace(lastMessage) &&
-					(lastMessage.Equals("fired") || lastMessage.Equals("killed"));
+			ShotResultType resultType;
+			switch (message)
+			{
+				case "fired":
+					resultType = ShotResultType.Fired;
+					break;
+				case "killed":
+					resultType = ShotResultType.Killed;
+					break;
+				case "missed":
+					resultType = ShotResultType.Missed;
+					break;
+				default:
+					throw new ApplicationException("Unknown shot response");
+			}
+
+			return new ShotResult(0, 0, resultType, true);
 		}
 
 		public void ReturnMissed()
@@ -95,6 +102,11 @@ namespace GameLogic.Player
 		public void ReturnFired()
 		{
 			_server.Send("fired");
+		}
+
+		public void ReturnKilled()
+		{
+			_server.Send("killed");
 		}
 	}
 }

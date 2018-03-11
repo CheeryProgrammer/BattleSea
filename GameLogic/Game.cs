@@ -12,8 +12,10 @@ namespace GameLogic
 		public FieldSetGenerator FieldGenerator { get; private set; }
 		private IPlayer _player;
 		private IRival _rival;
+		private bool[,] _used;
 		public bool MyTurn { get; private set; }
 		public static readonly int[] AvailableShips = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
+		private readonly int _fieldSize;
 
 		public event EventHandler<ShotResultEvent> OnShot;
 
@@ -26,7 +28,8 @@ namespace GameLogic
 
 		public Game(int fieldSize)
 		{
-			FieldGenerator = new FieldSetGenerator(AvailableShips, fieldSize);			
+			_fieldSize = fieldSize;
+			FieldGenerator = new FieldSetGenerator(AvailableShips, fieldSize);
 		}
 
 		public async Task<bool> StartNetworkGameAsync(string ip, int port, bool isHost = true)
@@ -38,9 +41,10 @@ namespace GameLogic
 
 		public Task<bool> ShotAsync(int x, int y)
 		{
-			return _rival.TryShot(x, y).ContinueWith( t =>
+			_used[x, y] = true;
+			return _rival.Shot(x, y).ContinueWith( t =>
 			{
-				MyTurn = t.Result;
+				MyTurn = t.Result.ResultType != ShotResultType.Missed;
 				return MyTurn;
 			});
 		}
@@ -61,7 +65,8 @@ namespace GameLogic
 
 		public void InitializeNetworkGame()
 		{
-			_player = new LocalPlayer(FieldGenerator.Ships.ToList());
+			_used = new bool[_fieldSize, _fieldSize];
+			  _player = new LocalPlayer(FieldGenerator.Ships.ToList());
 			_rival = new NetworkPlayer();
 			_rival.OnShot += Rival_OnShot;
 		}
@@ -69,16 +74,23 @@ namespace GameLogic
 		private void Rival_OnShot(object sender, ShotEvent e)
 		{
 			var rival = sender as IRival;
-			bool result = _player.TryShot(e.X, e.Y);
-			if (result)
+			ShotResult result = _player.Shot(e.X, e.Y);
+			switch (result.ResultType)
 			{
-				rival.ReturnFired();
+				case ShotResultType.Fired:
+					rival.ReturnFired();
+					break;
+				case ShotResultType.Missed:
+					rival.ReturnMissed();
+					MyTurn = true;
+					break;
+				case ShotResultType.Killed:
+					rival.ReturnKilled();
+					break;
+				default:
+					throw new Exception("Unknown result type");
 			}
-			else
-			{
-				rival.ReturnMissed();
-				MyTurn = true;
-			}
+
 			OnShot?.Invoke(this, new ShotResultEvent(e.X, e.Y, result));
 		}
 
@@ -86,6 +98,11 @@ namespace GameLogic
 		{
 			_player = new LocalPlayer(FieldGenerator.Ships.ToList());
 			_rival = new NetworkPlayer();
+		}
+
+		public bool IsUsed(int x, int y)
+		{
+			return _used != null && _used[x, y];
 		}
 	}
 

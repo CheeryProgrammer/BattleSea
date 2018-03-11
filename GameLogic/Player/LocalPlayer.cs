@@ -30,11 +30,25 @@ namespace GameLogic
 			SetReady();
 			return true;
 		}
-		
-		public bool TryShot(int x, int y)
+
+		public ShotResult Shot(int x, int y)
 		{
 			var p = new Point(x, y);
-			return _ships.Any(s=>s.AcceptShot(p));
+			var resultType = ShotResultType.Missed;
+			var ship = _ships.FirstOrDefault(s => s.TryAcceptShot(p));
+			if (ship != null)
+			{
+				resultType = ship.IsAlive
+					? ShotResultType.Fired
+					: ShotResultType.Killed;
+			}
+
+			var result = new ShotResult(x, y, resultType, _ships.Any(s => s.IsAlive));
+			if (ship != null && !ship.IsAlive)
+			{
+				result.SetKilledSegments(ship.Segments);
+			}
+			return result;
 		}
 	}
 }

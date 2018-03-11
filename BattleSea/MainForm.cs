@@ -1,6 +1,5 @@
 ﻿using BattleSea.Properties;
 using GameLogic;
-using GameLogic.Player;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,8 +31,32 @@ namespace BattleSea
 			dgvMy.Invoke(new Action(() => 
 			{
 				var p = Common.DeNormalizeCoordinates(e.X, e.Y);
-				dgvMy.Rows[p.Y].Cells[p.X].Value = e.Result ? Resources.Fired : Resources.Missed;
+				var cell = dgvMy.Rows[p.Y].Cells[p.X];
+				switch (e.Result.ResultType)
+				{
+					case ShotResultType.Missed:
+						cell.Value = Resources.Missed;
+						break;
+					case ShotResultType.Fired:
+						cell.Value = Resources.Fired;
+						break;
+					case ShotResultType.Killed:
+						DrawKilledShip(e.Result);
+						break;
+					default:
+						throw new ApplicationException("Unknown result type");
+				}
+
 			}));
+		}
+
+		private void DrawKilledShip(ShotResult result)
+		{
+			foreach (var pos in result.KilledSegments.Select(seg => seg.Position))
+			{
+				var p = Common.DeNormalizeCoordinates(pos);
+				dgvMy.Rows[p.Y].Cells[p.X].Value = Resources.Killed;
+			}
 		}
 
 		private void RenderMyField()
@@ -165,13 +188,17 @@ namespace BattleSea
 		private async void HandleMouseEnemyClick(DataGridViewCellMouseEventArgs e)
 		{
 			if (!_game.MyTurn) return;
+
 			var p = Common.NormalizeCoordinates(e.ColumnIndex, e.RowIndex);
-			if (p.X < 0 || p.X > 9 || p.Y < 0 || p.Y > 9) return;
+
+			if (p.X < 0 || p.X > 9 || p.Y < 0 || p.Y > 9 || _game.IsUsed(p.X, p.Y))
+				return;
+
 			if (e.Button == MouseButtons.Left)
 			{
 				var success = await _game.ShotAsync(p.X, p.Y);
 				dgvEnemy.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = success
-					? Resources.Fired
+					? Resources.Hit
 					: Resources.Missed;
 			}
 		}

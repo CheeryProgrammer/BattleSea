@@ -10,7 +10,7 @@
 			Position = point;
 		}
 
-		public bool AcceptShot(Point p)
+		public bool TryAcceptShot(Point p)
 		{
 			if (Position.X == p.X && Position.Y == p.Y)
 			{
