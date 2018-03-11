@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Network
 {
-	public interface ISocket
+	public interface ISocket: IDisposable
 	{
 		event EventHandler<string> OnMessageReceived;
 		void Send(string v);

@@ -17,7 +17,7 @@ namespace GameLogic
 		public static readonly int[] AvailableShips = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
 		private readonly int _fieldSize;
 
-		public event EventHandler<ShotResultEvent> OnShot;
+		public event EventHandler<ShotResultEvent> OnEnemyShot;
 
 		public IReadOnlyCollection<Segment> Segments { get => FieldGenerator.Ships.SelectMany(s => s.Segments).ToList(); }
 
@@ -39,13 +39,13 @@ namespace GameLogic
 				&& _player.Initialize();
 		}
 
-		public Task<bool> ShotAsync(int x, int y)
+		public Task<ShotResult> ShotAsync(int x, int y)
 		{
 			_used[x, y] = true;
 			return _rival.Shot(x, y).ContinueWith( t =>
 			{
 				MyTurn = t.Result.ResultType != ShotResultType.Missed;
-				return MyTurn;
+				return t.Result;
 			});
 		}
 
@@ -66,7 +66,7 @@ namespace GameLogic
 		public void InitializeNetworkGame()
 		{
 			_used = new bool[_fieldSize, _fieldSize];
-			  _player = new LocalPlayer(FieldGenerator.Ships.ToList());
+			_player = new LocalPlayer(FieldGenerator.Ships.ToList());
 			_rival = new NetworkPlayer();
 			_rival.OnShot += Rival_OnShot;
 		}
@@ -75,23 +75,9 @@ namespace GameLogic
 		{
 			var rival = sender as IRival;
 			ShotResult result = _player.Shot(e.X, e.Y);
-			switch (result.ResultType)
-			{
-				case ShotResultType.Fired:
-					rival.ReturnFired();
-					break;
-				case ShotResultType.Missed:
-					rival.ReturnMissed();
-					MyTurn = true;
-					break;
-				case ShotResultType.Killed:
-					rival.ReturnKilled();
-					break;
-				default:
-					throw new Exception("Unknown result type");
-			}
-
-			OnShot?.Invoke(this, new ShotResultEvent(e.X, e.Y, result));
+			rival.ReturnResult(result);
+			MyTurn = result.ResultType == ShotResultType.Missed;
+			OnEnemyShot?.Invoke(this, new ShotResultEvent(e.X, e.Y, result));
 		}
 
 		public void InitializeJoinGame()
@@ -103,6 +89,12 @@ namespace GameLogic
 		public bool IsUsed(int x, int y)
 		{
 			return _used != null && _used[x, y];
+		}
+
+		public void Dispose()
+		{
+			_player?.Dispose();
+			_rival?.Dispose();
 		}
 	}
 

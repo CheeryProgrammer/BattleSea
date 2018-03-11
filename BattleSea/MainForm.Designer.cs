@@ -64,10 +64,8 @@
 			this.dataGridViewImageColumn8 = new System.Windows.Forms.DataGridViewImageColumn();
 			this.dataGridViewImageColumn9 = new System.Windows.Forms.DataGridViewImageColumn();
 			this.dataGridViewImageColumn10 = new System.Windows.Forms.DataGridViewImageColumn();
-			this.tabControl1 = new System.Windows.Forms.TabControl();
+			this.tbGameMode = new System.Windows.Forms.TabControl();
 			this.tbPC = new System.Windows.Forms.TabPage();
-			this.btnManual = new System.Windows.Forms.Button();
-			this.btnRandomize = new System.Windows.Forms.Button();
 			this.btnPCStart = new System.Windows.Forms.Button();
 			this.tbLAN = new System.Windows.Forms.TabPage();
 			this.label1 = new System.Windows.Forms.Label();
@@ -76,12 +74,14 @@
 			this.btnJoinGame = new System.Windows.Forms.Button();
 			this.tbAddress = new System.Windows.Forms.TextBox();
 			this.btnHostGame = new System.Windows.Forms.Button();
+			this.btnManual = new System.Windows.Forms.Button();
+			this.btnRandomize = new System.Windows.Forms.Button();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
 			this.tbMessages = new System.Windows.Forms.TextBox();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
 			((System.ComponentModel.ISupportInitialize)(this.dgvMy)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.dgvEnemy)).BeginInit();
-			this.tabControl1.SuspendLayout();
+			this.tbGameMode.SuspendLayout();
 			this.tbPC.SuspendLayout();
 			this.tbLAN.SuspendLayout();
 			this.groupBox1.SuspendLayout();
@@ -439,15 +439,16 @@
 			this.dataGridViewImageColumn10.Resizable = System.Windows.Forms.DataGridViewTriState.False;
 			this.dataGridViewImageColumn10.Width = 24;
 			// 
-			// tabControl1
+			// tbGameMode
 			// 
-			this.tabControl1.Controls.Add(this.tbPC);
-			this.tabControl1.Controls.Add(this.tbLAN);
-			this.tabControl1.Location = new System.Drawing.Point(12, 284);
-			this.tabControl1.Name = "tabControl1";
-			this.tabControl1.SelectedIndex = 0;
-			this.tabControl1.Size = new System.Drawing.Size(266, 104);
-			this.tabControl1.TabIndex = 2;
+			this.tbGameMode.Controls.Add(this.tbPC);
+			this.tbGameMode.Controls.Add(this.tbLAN);
+			this.tbGameMode.Location = new System.Drawing.Point(12, 284);
+			this.tbGameMode.Name = "tbGameMode";
+			this.tbGameMode.SelectedIndex = 0;
+			this.tbGameMode.Size = new System.Drawing.Size(266, 104);
+			this.tbGameMode.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+			this.tbGameMode.TabIndex = 2;
 			// 
 			// tbPC
 			// 
@@ -455,30 +456,10 @@
 			this.tbPC.Location = new System.Drawing.Point(4, 22);
 			this.tbPC.Name = "tbPC";
 			this.tbPC.Padding = new System.Windows.Forms.Padding(3);
-			this.tbPC.Size = new System.Drawing.Size(258, 84);
+			this.tbPC.Size = new System.Drawing.Size(258, 78);
 			this.tbPC.TabIndex = 0;
 			this.tbPC.Text = "Versus PC";
 			this.tbPC.UseVisualStyleBackColor = true;
-			// 
-			// btnManual
-			// 
-			this.btnManual.Location = new System.Drawing.Point(104, 10);
-			this.btnManual.Name = "btnManual";
-			this.btnManual.Size = new System.Drawing.Size(75, 23);
-			this.btnManual.TabIndex = 1;
-			this.btnManual.Text = "Set manual";
-			this.btnManual.UseVisualStyleBackColor = true;
-			this.btnManual.Click += new System.EventHandler(this.BtnSetManual_Click);
-			// 
-			// btnRandomize
-			// 
-			this.btnRandomize.Location = new System.Drawing.Point(185, 10);
-			this.btnRandomize.Name = "btnRandomize";
-			this.btnRandomize.Size = new System.Drawing.Size(75, 23);
-			this.btnRandomize.TabIndex = 1;
-			this.btnRandomize.Text = "Randomize";
-			this.btnRandomize.UseVisualStyleBackColor = true;
-			this.btnRandomize.Click += new System.EventHandler(this.BtnRandomize_Click);
 			// 
 			// btnPCStart
 			// 
@@ -560,6 +541,26 @@
 			this.btnHostGame.UseVisualStyleBackColor = true;
 			this.btnHostGame.Click += new System.EventHandler(this.BtnHostGame_Click);
 			// 
+			// btnManual
+			// 
+			this.btnManual.Location = new System.Drawing.Point(104, 10);
+			this.btnManual.Name = "btnManual";
+			this.btnManual.Size = new System.Drawing.Size(75, 23);
+			this.btnManual.TabIndex = 1;
+			this.btnManual.Text = "Set manual";
+			this.btnManual.UseVisualStyleBackColor = true;
+			this.btnManual.Click += new System.EventHandler(this.BtnSetManual_Click);
+			// 
+			// btnRandomize
+			// 
+			this.btnRandomize.Location = new System.Drawing.Point(185, 10);
+			this.btnRandomize.Name = "btnRandomize";
+			this.btnRandomize.Size = new System.Drawing.Size(75, 23);
+			this.btnRandomize.TabIndex = 1;
+			this.btnRandomize.Text = "Randomize";
+			this.btnRandomize.UseVisualStyleBackColor = true;
+			this.btnRandomize.Click += new System.EventHandler(this.BtnRandomize_Click);
+			// 
 			// groupBox1
 			// 
 			this.groupBox1.Controls.Add(this.tbMessages);
@@ -576,6 +577,7 @@
 			this.tbMessages.Location = new System.Drawing.Point(3, 16);
 			this.tbMessages.Multiline = true;
 			this.tbMessages.Name = "tbMessages";
+			this.tbMessages.ReadOnly = true;
 			this.tbMessages.Size = new System.Drawing.Size(258, 126);
 			this.tbMessages.TabIndex = 0;
 			// 
@@ -597,7 +599,7 @@
 			this.ClientSize = new System.Drawing.Size(565, 441);
 			this.Controls.Add(this.groupBox2);
 			this.Controls.Add(this.groupBox1);
-			this.Controls.Add(this.tabControl1);
+			this.Controls.Add(this.tbGameMode);
 			this.Controls.Add(this.dgvEnemy);
 			this.Controls.Add(this.dgvMy);
 			this.MaximumSize = new System.Drawing.Size(581, 480);
@@ -607,7 +609,7 @@
 			this.Load += new System.EventHandler(this.MainForm_Load);
 			((System.ComponentModel.ISupportInitialize)(this.dgvMy)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.dgvEnemy)).EndInit();
-			this.tabControl1.ResumeLayout(false);
+			this.tbGameMode.ResumeLayout(false);
 			this.tbPC.ResumeLayout(false);
 			this.tbLAN.ResumeLayout(false);
 			this.tbLAN.PerformLayout();
@@ -643,7 +645,7 @@
 		private System.Windows.Forms.DataGridViewImageColumn dataGridViewImageColumn8;
 		private System.Windows.Forms.DataGridViewImageColumn dataGridViewImageColumn9;
 		private System.Windows.Forms.DataGridViewImageColumn dataGridViewImageColumn10;
-		private System.Windows.Forms.TabControl tabControl1;
+		private System.Windows.Forms.TabControl tbGameMode;
 		private System.Windows.Forms.TabPage tbPC;
 		private System.Windows.Forms.TabPage tbLAN;
 		private System.Windows.Forms.Button btnPCStart;

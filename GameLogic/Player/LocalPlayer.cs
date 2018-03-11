@@ -1,8 +1,6 @@
 ﻿using GameLogic.Player;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace GameLogic
 {
@@ -49,6 +47,12 @@ namespace GameLogic
 				result.SetKilledSegments(ship.Segments);
 			}
 			return result;
+		}
+
+		public void Dispose()
+		{
+			_isReady = false;
+			_ships = null;
 		}
 	}
 }

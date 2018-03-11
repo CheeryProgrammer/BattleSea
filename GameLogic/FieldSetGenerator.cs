@@ -1,4 +1,4 @@
-﻿using System;
+﻿using GameLogic.ShipStuff;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,6 +13,9 @@ namespace GameLogic
 			{
 				if (_ships == null)
 					_ships = new List<Ship>();
+
+				foreach (var seg in _ships.SelectMany(s => s.Segments))
+					seg.State = SegmentState.Alive;
 				return _ships;
 			}
 		}

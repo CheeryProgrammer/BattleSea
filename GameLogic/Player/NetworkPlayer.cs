@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace GameLogic.Player
 {
@@ -75,38 +76,19 @@ namespace GameLogic.Player
 
 		private ShotResult ParseResponse(string message)
 		{
-			ShotResultType resultType;
-			switch (message)
-			{
-				case "fired":
-					resultType = ShotResultType.Fired;
-					break;
-				case "killed":
-					resultType = ShotResultType.Killed;
-					break;
-				case "missed":
-					resultType = ShotResultType.Missed;
-					break;
-				default:
-					throw new ApplicationException("Unknown shot response");
-			}
-
-			return new ShotResult(0, 0, resultType, true);
+			return JsonConvert.DeserializeObject<ShotResult>(message);
 		}
 
-		public void ReturnMissed()
+		public void ReturnResult(ShotResult result)
 		{
-			_server.Send("missed");
+			var msg = JsonConvert.SerializeObject(result);
+			_server.Send(msg);
 		}
 
-		public void ReturnFired()
+		public void Dispose()
 		{
-			_server.Send("fired");
-		}
-
-		public void ReturnKilled()
-		{
-			_server.Send("killed");
+			_server.Dispose();
+			_server = null;
 		}
 	}
 }

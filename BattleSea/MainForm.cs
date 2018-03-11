@@ -21,32 +21,43 @@ namespace BattleSea
 		private void MainForm_Load(object sender, EventArgs e)
 		{
 			InitFields();
+			tbGameMode.SelectedIndex = 1;
 			_game = new Game(Common.FieldSize);
-			_game.OnShot += Game_OnShot;
+			_game.OnEnemyShot += Game_OnEnemyShot;
 			_editableField = new EditableField(dgvMy);
 		}
 
-		private void Game_OnShot(object sender, ShotResultEvent e)
+		private void Game_OnEnemyShot(object sender, ShotResultEvent e)
 		{
 			dgvMy.Invoke(new Action(() => 
 			{
+				var res = e.Result;
 				var p = Common.DeNormalizeCoordinates(e.X, e.Y);
 				var cell = dgvMy.Rows[p.Y].Cells[p.X];
-				switch (e.Result.ResultType)
+				string msg = string.Empty;
+				switch (res.ResultType)
 				{
 					case ShotResultType.Missed:
 						cell.Value = Resources.Missed;
+						msg = "Hooray! Loser has missed. Let's answer them!";
 						break;
 					case ShotResultType.Fired:
 						cell.Value = Resources.Fired;
+						msg = "Sh#t! We caught fire!";
 						break;
 					case ShotResultType.Killed:
-						DrawKilledShip(e.Result);
+						DrawKilledShip(res);
+						msg = "F#ck! We lost our ship!";
+						if (!res.StillAlive)
+						{
+							msg += "\nGame is over. It was our last chance :(";
+							DisposeGame();
+						}
 						break;
 					default:
 						throw new ApplicationException("Unknown result type");
 				}
-
+				tbMessages.AppendText(msg + "\n");
 			}));
 		}
 
@@ -123,9 +134,7 @@ namespace BattleSea
 
 		private void TryStartGameAsync()
 		{
-			/*tbMessages.AppendText("Connecting..." + Environment.NewLine);
-			if(_game.Ready() && await _game.StartNetworkGameAsync(tbAddress.Text, ))
-				tbMessages.AppendText("Connected!" + Environment.NewLine);*/
+			throw new NotImplementedException();
 		}
 
 		private void BtnRandomize_Click(object sender, EventArgs e)
@@ -159,7 +168,7 @@ namespace BattleSea
 
 		private void DgvEnemy_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
 		{
-			HandleMouseEnemyClick(e);
+			HandleMouseOnEnemyClick(e);
 		}
 
 		private void HandleMouseOnMyClick(DataGridViewCellMouseEventArgs e)
@@ -185,9 +194,9 @@ namespace BattleSea
 			}
 		}
 
-		private async void HandleMouseEnemyClick(DataGridViewCellMouseEventArgs e)
+		private async void HandleMouseOnEnemyClick(DataGridViewCellMouseEventArgs e)
 		{
-			if (!_game.MyTurn) return;
+			if (!_game.MyTurn || !_game.Ready()) return;
 
 			var p = Common.NormalizeCoordinates(e.ColumnIndex, e.RowIndex);
 
@@ -196,10 +205,44 @@ namespace BattleSea
 
 			if (e.Button == MouseButtons.Left)
 			{
-				var success = await _game.ShotAsync(p.X, p.Y);
-				dgvEnemy.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = success
-					? Resources.Hit
-					: Resources.Missed;
+				try
+				{
+					var shotResult = await _game.ShotAsync(p.X, p.Y);
+					var targetCell = dgvEnemy.Rows[e.RowIndex].Cells[e.ColumnIndex];
+					string msg = string.Empty;
+
+					switch (shotResult.ResultType)
+					{
+						case ShotResultType.Missed:
+							targetCell.Value = Resources.Missed;
+							msg = "Sh@t! We missed! Waiting for enemy's shot...";
+							break;
+						case ShotResultType.Fired:
+							targetCell.Value = Resources.Hit;
+							msg = "Yes! We fired them!";
+							break;
+						case ShotResultType.Killed:
+							targetCell.Value = Resources.Hit;
+							msg = "Hooray! We sunk their ship!";
+							if (!shotResult.StillAlive)
+							{
+								msg += "\nWe won! It's the end. You are the best of the best! :)";
+								DisposeGame();
+							}
+							break;
+						default:
+							throw new ApplicationException("Unknown result type");
+					}
+					tbMessages.AppendText(msg + "\n");
+					return;
+				}
+				catch
+				{
+					// ignored
+				}
+				DisposeGame();
+				RenderMyField();
+				tbMessages.AppendText("Error occured. Session closed.\n");				
 			}
 		}
 
@@ -215,10 +258,15 @@ namespace BattleSea
 
 		private async Task InitNetworkGame(bool isHost)
 		{
+			ClearField(dgvEnemy);
+			ClearField(dgvMy);
+			RenderMyField();
 			if (_game.FieldGenerator.HasValidSet())
 			{
 				btnHostGame.Enabled = false;
 				btnJoinGame.Enabled = false;
+				tbAddress.Enabled = false;
+				tbPort.Enabled = false;
 				tbMessages.AppendText("Connecting...\n");
 				_game.InitializeNetworkGame();
 				var ip = tbAddress.Text;
@@ -233,6 +281,8 @@ namespace BattleSea
 				{
 					btnHostGame.Enabled = true;
 					btnJoinGame.Enabled = true;
+					tbAddress.Enabled = true;
+					tbPort.Enabled = true;
 					tbMessages.AppendText("Error while connecting. Check connection!");
 				}
 			}
@@ -240,6 +290,15 @@ namespace BattleSea
 			{
 				tbMessages.AppendText("Please, set up your field\n");
 			}
+		}
+
+		private void DisposeGame()
+		{
+			btnHostGame.Enabled = true;
+			btnJoinGame.Enabled = true;
+			tbAddress.Enabled = true;
+			tbPort.Enabled = true;
+			_game.Dispose();
 		}
 	}
 }

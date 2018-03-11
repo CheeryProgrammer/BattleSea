@@ -76,5 +76,7 @@ namespace Network
 				return ReadMessage();
 			}
 		}
+
+		public abstract void Dispose();		
 	}
 }

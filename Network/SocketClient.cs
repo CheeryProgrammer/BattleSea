@@ -7,6 +7,8 @@ namespace Network
 {
 	public class SocketClient: SocketBase
 	{
+		private Task _listeningTask;
+
 		public SocketClient(string ip, int port): base(ip, port) { }
 
 		public sealed override Task<bool> InitializeSocket()
@@ -29,11 +31,20 @@ namespace Network
 				}
 				return false;
 			});
-			connectingTask.ContinueWith(t =>
+			_listeningTask = connectingTask.ContinueWith(t =>
 			{
 				ListenMessages(_cancellationTokenSource.Token);
 			}, _cancellationTokenSource.Token);
 			return connectingTask;
+		}
+
+		public override void Dispose()
+		{
+			_cancellationTokenSource.Cancel();
+			_cancellationTokenSource = null;
+			_socket?.Close();
+			_socket?.Dispose();
+			_socket = null;
 		}
 	}
 }
